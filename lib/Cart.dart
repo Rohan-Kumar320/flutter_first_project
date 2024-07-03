@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -29,78 +30,94 @@ class cartapp extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: 20,),
-            ListView.builder(
-              itemCount: 4,
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                physics: ScrollPhysics(),
-                itemBuilder: (context, index) {
-                  return Stack(
-                      children: [
-                        Container(
-                          margin: EdgeInsets.symmetric(horizontal: 1,vertical: 10),
-                          width: screenWidth ,
-                          height: 130,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
 
-                        Positioned(
-                            left: 10,
-                            top: 8,
-                            child: Container(
-                              width: screenWidth * 0.3,
-                              height: 115,
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: NetworkImage(
-                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKo1atZN750uN-jAZh7I6bI48pmbmpigfZTQ&s"
-                                    )
+            StreamBuilder(
+                stream: FirebaseFirestore.instance.collection("Cart").where("email" ,isEqualTo: "rohan@gmail.com").snapshots(),
+                builder: (BuildContext context, snapshot) {
+                  var dataLength = snapshot.data!.docs.length;
+                  if (snapshot.hasData) {
+                    return  ListView.builder(
+                      itemCount: dataLength,
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      physics: ScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        String title = snapshot.data!.docs[index]["title"];
+                        String desc = snapshot.data!.docs[index]["desc"];
+                        String image = snapshot.data!.docs[index]["image"];
+                        String price = snapshot.data!.docs[index]["price"];
+                        return Stack(
+                            children: [
+                              Container(
+                                margin: EdgeInsets.symmetric(horizontal: 1,vertical: 10),
+                                width: screenWidth ,
+                                height: 130,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(25),
                                 ),
-                                borderRadius: BorderRadius.circular(25),
                               ),
 
-                            )
-                        ),
+                              Positioned(
+                                  left: 10,
+                                  top: 8,
+                                  child: Container(
+                                    width: screenWidth * 0.3,
+                                    height: 115,
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                          fit: BoxFit.cover,
+                                          image: NetworkImage(
+                                              image
+                                          )
+                                      ),
+                                      borderRadius: BorderRadius.circular(25),
+                                    ),
 
-                        Positioned(
-                          left: 170,
-                          top: 25,
-                          child: Text("Stylish Chair",style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold),),
-                        ),
-                        Positioned(
-                          left: 170,
-                          top: 65,
-                          child: Icon(Icons.currency_pound_outlined,size: 32,color: Colors.grey,),
-                        ),
-                        Positioned(
-                          left: 200,
-                          top: 65,
-                          child: Text("150.99",style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold),),
-                        ),
+                                  )
+                              ),
 
-                        Positioned(
-                            left: 325,
-                            top: 30,
-                            child: Container(
-                              width: 80,
-                              height: 35,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Colors.black
+                              Positioned(
+                                left: 170,
+                                top: 25,
+                                child: Text(title,style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold),),
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 20,top: 3),
-                                child: Text("- 1 +",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 22),),
+                              Positioned(
+                                left: 170,
+                                top: 65,
+                                child: Icon(Icons.currency_pound_outlined,size: 32,color: Colors.grey,),
                               ),
-                            )
-                        )
-                      ]
-                  );
-                },
-            ),
+                              Positioned(
+                                left: 200,
+                                top: 65,
+                                child: Text(price,style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold),),
+                              ),
+
+                              Positioned(
+                                  left: 325,
+                                  top: 30,
+                                  child: Container(
+                                    width: 80,
+                                    height: 35,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        color: Colors.black
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(left: 20,top: 3),
+                                      child: Text("- 1 +",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 22),),
+                                    ),
+                                  )
+                              )
+                            ]
+                        );
+                      },
+                    );
+                  } else if (snapshot.hasError) {
+                    return Icon(Icons.error_outline);
+                  } else {
+                    return CircularProgressIndicator();
+                  }
+                }),
             
             SizedBox(height: 20,),
 

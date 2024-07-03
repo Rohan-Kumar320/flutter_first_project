@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:furniture_shop_teamwork/Cart.dart';
+import 'package:furniture_shop_teamwork/add_data.dart';
 import 'package:furniture_shop_teamwork/profilepage.dart';
 import 'package:furniture_shop_teamwork/viewproduct.dart';
 
@@ -33,6 +35,7 @@ class MyHomePage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.notifications_none_sharp),
             onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AddData(),));
             },
           ),
         ],
@@ -102,26 +105,58 @@ class MyHomePage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 16),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    StackItem(
-                      imageUrl:"https://www.home-designing.com/wp-content/uploads/2022/06/plush-upholstered-round-rocking-chair-modern-papasan-chairs-for-sale-online-wooden-base-black-metal-frame-orange-diamond-tufted-velvet-upholstery-luxe-rocker-600x600.jpg",
-                      title: 'Stylish Chair',
-                      description: 'Recliners and living room seating...',
-                      price: '\$150.99',
-                    ),
-                    SizedBox(width: 20),
-                    StackItem(
-                      imageUrl: "https://www.home-designing.com/wp-content/uploads/2022/06/plush-upholstered-round-rocking-chair-modern-papasan-chairs-for-sale-online-wooden-base-black-metal-frame-orange-diamond-tufted-velvet-upholstery-luxe-rocker-600x600.jpg",
-                      title: 'Stylish Chair',
-                      description: 'Recliners and living room seating...',
-                      price: '\$299.99',
-                    ),
-                  ],
-                ),
-              ),
+
+
+              StreamBuilder(
+                  stream: FirebaseFirestore.instance.collection("product").snapshots(),
+                  builder: (BuildContext context, snapshot) {
+                    if (snapshot.hasData) {
+                      var dataLength = snapshot.data!.docs.length;
+                      return  SizedBox(
+                        height: 250,
+                        child: Expanded(
+                          child: ListView.builder(
+                            itemCount: dataLength,
+                            scrollDirection: Axis.horizontal,
+
+                            itemBuilder: (context, index) {
+
+                              String title = snapshot.data!.docs[index]["title"];
+                              String desc = snapshot.data!.docs[index]["desc"];
+                              String image = snapshot.data!.docs[index]["image"];
+                              String price = snapshot.data!.docs[index]["price"];
+
+                              return  Container(
+                                margin: EdgeInsets.symmetric(horizontal: 10),
+                                child: GestureDetector(
+                                  onDoubleTap: ()async{
+                                    await FirebaseFirestore.instance.collection("Cart").add({
+                                      "title" : title,
+                                      "desc" : desc,
+                                      "image" : image,
+                                      "price" : price,
+                                      "email" : "rohan@gmail.com"
+                                    });
+                                  },
+                                  child: StackItem(
+                                    imageUrl: image,
+                                    title: title,
+                                    description: desc,
+                                    price: '\$$price',
+                                  ),
+                                ),
+                              );
+                            },),
+                        ),
+                      );
+                    } if (snapshot.hasError) {
+                      return Icon(Icons.error_outline);
+                    } if(snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    }
+                    return Container();
+                  }),
+
               Button(),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
